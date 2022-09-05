@@ -1,0 +1,45 @@
+version: '3.9'
+services:
+
+  #mssqldata:
+   # image: mcr.microsoft.com/mssql/server:2022-latest
+   # entrypoint: /bin/bash
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - 1433:1433
+    volumes:
+      - /var/opt/mssql
+      # we copy our scripts onto the container
+      - ./:/usr/src/app 
+    # bash will be executed from that path, our scripts folder
+    working_dir: /usr/src/app 
+    # Para iniciar o SQL Server com o schema pronto
+    command: sh -c ' chmod +x ./entrypoint.sh; ./entrypoint.sh & /opt/mssql/bin/sqlservr;'
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: Password123!
+    # Caso queira persistir os dados, basta remover o comentário das linhas 5,6,7,25 e 26
+    #volumes_from:
+     # - mssqldata
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - 15672:15672
+      - 5672:5672
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+
+  cosmosdb:
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator
+    ports:
+      - 8081:8081    
+    environment:
+      AZURE_COSMOS_EMULATOR_PARTITION_COUNT: 10
+      AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE: 'true'
+      AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE: 127.0.0.1
+
+ 
